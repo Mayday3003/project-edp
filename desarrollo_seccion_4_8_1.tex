@@ -1,0 +1,670 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish,es-noshorthands]{babel}
+\usepackage{lmodern}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{geometry}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{xcolor}
+\usepackage[most]{tcolorbox}
+\usepackage{hyperref}
+\geometry{top=2.3cm, bottom=2.3cm, left=2.6cm, right=2.6cm}
+\hypersetup{colorlinks=true,linkcolor=blue!50!black,urlcolor=blue!50!black}
+
+\newtcolorbox{idea}[1][]{colback=blue!4,colframe=blue!45!black,fonttitle=\bfseries,title=#1}
+\newtcolorbox{resultado}[1][]{colback=green!5,colframe=green!40!black,fonttitle=\bfseries,title=#1}
+\newtcolorbox{ojo}[1][]{colback=orange!6,colframe=orange!60!black,fonttitle=\bfseries,title=#1}
+
+\newcommand{\E}{\mathbf{E}}
+\newcommand{\B}{\mathbf{B}}
+\newcommand{\vv}{\mathbf{v}}
+\newcommand{\J}{\mathbf{J}}
+\newcommand{\eps}{\boldsymbol{\varepsilon}}
+\renewcommand{\wp}{\omega_p}
+\newcommand{\wc}{\omega_c}
+\newcommand{\rr}{\hat{\mathbf{r}}}
+\newcommand{\tth}{\hat{\boldsymbol{\theta}}}
+\newcommand{\zz}{\hat{\mathbf{z}}}
+\newcommand{\xx}{\hat{\mathbf{x}}}
+\newcommand{\yy}{\hat{\mathbf{y}}}
+\newcommand{\Kp}{\left(1-\dfrac{\wp^2}{\omega^2}\right)}
+
+\title{\textbf{Ondas de carga espacial en un cilindro lleno de plasma\\ en un campo magnético axial infinito}\\[4pt]
+\large Desarrollo completo de la Sección 4.8.1 de Krall y Trivelpiece (pp.~168--171)}
+\author{Mariana Lopera Correa\\ \small Ecuaciones Diferenciales Parciales, Computación Científica, Universidad de Medellín}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+El libro \emph{Principles of Plasma Physics} plantea las ecuaciones de Maxwell para un plasma frío dentro de un cilindro conductor (ecuaciones 4.8.1--4.8.4), escribe la EDP para la componente $E_z$ del campo eléctrico (4.8.11) y salta directamente a la solución con funciones de Bessel (4.8.12) y a la relación de dispersión (4.8.15). En este documento se reconstruye cada paso intermedio: la deducción del tensor dieléctrico (Problema 4.8.1 del libro), la ecuación de onda vectorial, su reducción a una EDP bidimensional, la separación de variables en coordenadas cilíndricas, la ecuación de Bessel, la condición de frontera y la relación de dispersión. Al final se interpreta el resultado (Figura 4.8.3 del libro).
+\end{abstract}
+
+\tableofcontents
+\newpage
+
+%=====================================================================
+\section{Lo mínimo que hay que saber antes de empezar}
+%=====================================================================
+
+\begin{idea}[¿Qué es un plasma?]
+Un gas tan caliente que sus átomos perdieron electrones: es una ``sopa'' de electrones libres (carga $-e$) e iones positivos. En conjunto es neutro, pero si los electrones se desplazan un poco respecto a los iones aparece un campo eléctrico que los jala de vuelta, se pasan, vuelven\ldots{} y el plasma oscila.
+\end{idea}
+
+\begin{idea}[La frecuencia de plasma $\omega_p$]
+Esa oscilación natural tiene una frecuencia fija,
+\[
+\wp^2=\frac{4\pi n_0 e^2}{m},
+\]
+donde $n_0$ es el número de electrones por unidad de volumen, $e$ la carga del electrón y $m$ su masa (unidades gaussianas, las del libro). Es la ``frecuencia propia'' del plasma, como la frecuencia de un resorte.
+\end{idea}
+
+\begin{idea}[¿Qué hace el campo magnético $B_0$?]
+Un campo magnético obliga a una carga en movimiento a girar alrededor de las líneas de campo (fuerza de Lorentz). Cuanto más fuerte el campo, más pequeños y rápidos son esos círculos. Si $B_0\to\infty$, los círculos tienen radio cero: el electrón \textbf{solo puede deslizarse a lo largo del eje $z$}, como una cuenta ensartada en un alambre.
+\end{idea}
+
+\begin{idea}[¿Qué es el tensor dieléctrico $\eps$?]
+En el vacío, el campo eléctrico $\E$ entra a las ecuaciones de Maxwell tal cual. En un material, las cargas del material responden al campo y lo modifican; esa respuesta se resume multiplicando $\E$ por una matriz $\eps$. Si el material responde distinto según la dirección (anisótropo), $\eps$ no es un número sino una matriz $3\times 3$.
+\end{idea}
+
+\begin{idea}[¿Qué es una relación de dispersión?]
+Una onda $e^{i(kz-\omega t)}$ tiene una frecuencia $\omega$ (qué tan rápido oscila en el tiempo) y un número de onda $k=2\pi/\lambda$ (qué tan rápido oscila en el espacio). En un medio dado no cualquier pareja $(\omega,k)$ es posible: la ecuación que las liga, $k=k(\omega)$, es la \textbf{relación de dispersión}. Es el objetivo final de la sección.
+\end{idea}
+
+\begin{idea}[¿Qué es una función de Bessel?]
+Así como $\sin x$ y $\cos x$ son las soluciones de $y''+y=0$ (que aparece en problemas con paredes planas), las funciones de Bessel $J_n(x)$ y $Y_n(x)$ son las soluciones de la ecuación de Bessel, que aparece siempre que separamos variables en geometría circular. $J_n(x)$ se parece a un coseno que se va amortiguando y tiene infinitos ceros, que llamaremos $p_{n1}<p_{n2}<\cdots$.
+\end{idea}
+
+\paragraph{Convenciones.} Se usan unidades gaussianas (como el libro). Toda cantidad perturbada (subíndice 1) varía en el tiempo como $e^{-i\omega t}$, de modo que
+\begin{equation}
+\frac{\partial}{\partial t}\left(\cdots\right) = -i\omega\left(\cdots\right).
+\label{eq:dt}
+\end{equation}
+El plasma es frío (sin presión), uniforme ($n_0$ constante), los iones se consideran inmóviles y las perturbaciones son pequeñas (se linealiza).
+
+\paragraph{Mapa del desarrollo.}
+\begin{enumerate}
+\item Maxwell + ecuaciones de fluido $\Rightarrow$ tensor $\eps$ (4.8.5). \hfill(Sección 2)
+\item Rotacional de Faraday $\Rightarrow$ EDP vectorial (4.8.6), (4.8.7). \hfill(Sección 3)
+\item Onda armónica en $z,t$ $\Rightarrow$ EDP 2D de Helmholtz (4.8.11). \hfill(Sección 4)
+\item Separación de variables $\Rightarrow$ dos EDOs. \hfill(Sección 5)
+\item EDO radial $=$ Bessel $\Rightarrow$ $J_n(Tr)$ (4.8.12). \hfill(Sección 6)
+\item Frontera $E_z(a)=0$ $\Rightarrow$ dispersión (4.8.15). \hfill(Sección 7)
+\end{enumerate}
+
+%=====================================================================
+\section{Paso 1: Deducción del tensor dieléctrico (ec.\ 4.8.5)}
+%=====================================================================
+
+\subsection{Las ecuaciones de partida}
+
+Equilibrio: electrones en reposo ($\vv_0=0$) con densidad uniforme $n_0$, campo magnético $\B_0=B_0\zz$ y sin campo eléctrico de equilibrio. Sobre este equilibrio se pone una perturbación pequeña $\vv_1,\,n_1,\,\E_1,\,\B_1$.
+
+\textbf{Ecuación de momento (Newton para el fluido de electrones).} La fuerza de Lorentz sobre una carga $-e$ es $-e\left(\E+\frac{1}{c}\vv\times\B\right)$, así que
+\[
+m\frac{d\vv}{dt}=-e\left(\E+\frac{1}{c}\vv\times\B\right).
+\]
+Al linealizar se conservan solo los términos de primer orden: $\vv=\vv_1$, $\E=\E_1$, $\B=\B_0+\B_1$. El término $\vv_1\times\B_1$ es producto de dos cantidades pequeñas y se descarta; también $(\vv_1\cdot\nabla)\vv_1$. Queda
+\begin{equation}
+m\frac{\partial \vv_1}{\partial t}=-e\E_1-\frac{e}{c}\,\vv_1\times\B_0 .
+\label{eq:mom}
+\end{equation}
+
+\textbf{Ecuación de continuidad (conservación del número de electrones).}
+\[
+\frac{\partial n}{\partial t}+\nabla\cdot(n\vv)=0
+\quad\xrightarrow{\;n=n_0+n_1\;}\quad
+\frac{\partial n_1}{\partial t}+n_0\,\nabla\cdot\vv_1=0,
+\]
+donde se usó que $n_0$ es constante y se descartó $n_1\vv_1$ (segundo orden).
+
+\subsection{Componentes de la ecuación de momento}
+
+Con $\B_0=B_0\zz$,
+\[
+\vv_1\times\B_0=
+\begin{vmatrix}\xx&\yy&\zz\\ v_x&v_y&v_z\\ 0&0&B_0\end{vmatrix}
+=\xx\,(v_yB_0-v_z\cdot 0)-\yy\,(v_xB_0-v_z\cdot0)+\zz\,(v_x\cdot0-v_y\cdot0)
+=v_yB_0\,\xx-v_xB_0\,\yy .
+\]
+Usando \eqref{eq:dt}, $m\,\partial_t\vv_1=-i\omega m\vv_1$. Dividiendo \eqref{eq:mom} entre $m$ y definiendo la \textbf{frecuencia ciclotrónica} $\wc=\dfrac{eB_0}{mc}$:
+\begin{align}
+x:&\quad -i\omega\, v_x=-\frac{e}{m}E_x-\wc\, v_y, \label{eq:vx}\\
+y:&\quad -i\omega\, v_y=-\frac{e}{m}E_y+\wc\, v_x, \label{eq:vy}\\
+z:&\quad -i\omega\, v_z=-\frac{e}{m}E_z. \label{eq:vz}
+\end{align}
+
+\textbf{Componente $z$.} De \eqref{eq:vz}, dividiendo entre $-i\omega$ y usando $1/i=-i$:
+\begin{equation}
+v_z=\frac{-\frac{e}{m}E_z}{-i\omega}=\frac{e}{i m\omega}E_z=-\frac{ie}{m\omega}E_z .
+\label{eq:vzsol}
+\end{equation}
+Esta componente \emph{no depende de $B_0$}: el campo magnético no frena el movimiento a lo largo de sí mismo.
+
+\textbf{Componentes transversales.} De \eqref{eq:vx} se despeja $v_y$:
+\[
+\wc v_y = i\omega v_x-\frac{e}{m}E_x \;\Rightarrow\; v_y=\frac{i\omega v_x-\frac{e}{m}E_x}{\wc}.
+\]
+Se sustituye en \eqref{eq:vy}:
+\[
+-i\omega\,\frac{i\omega v_x-\frac{e}{m}E_x}{\wc}=-\frac{e}{m}E_y+\wc v_x .
+\]
+Multiplicando por $\wc$ y usando $-i\cdot i=1$:
+\[
+\omega^2 v_x+i\omega\frac{e}{m}E_x=-\frac{e}{m}\wc E_y+\wc^2 v_x
+\;\Rightarrow\;
+(\omega^2-\wc^2)\,v_x=-\frac{e}{m}\left(i\omega E_x+\wc E_y\right).
+\]
+Por lo tanto
+\begin{equation}
+v_x=\frac{e}{m}\,\frac{i\omega E_x+\wc E_y}{\wc^2-\omega^2},
+\qquad
+v_y=\frac{e}{m}\,\frac{i\omega E_y-\wc E_x}{\wc^2-\omega^2},
+\label{eq:vperp}
+\end{equation}
+donde $v_y$ se obtuvo sustituyendo $v_x$ en la expresión de $v_y$ de arriba (o, por simetría, intercambiando $x\to y$ y $\wc\to-\wc$).
+
+\subsection{El límite $B_0\to\infty$}
+
+$B_0\to\infty$ significa $\wc\to\infty$. En \eqref{eq:vperp} el numerador crece como $\wc$ y el denominador como $\wc^2$:
+\[
+v_x=\frac{e}{m}\,\frac{\wc\left(E_y+\frac{i\omega}{\wc}E_x\right)}{\wc^2\left(1-\frac{\omega^2}{\wc^2}\right)}
+=\frac{e}{m\wc}\,\frac{E_y+\frac{i\omega}{\wc}E_x}{1-\frac{\omega^2}{\wc^2}}
+\;\xrightarrow{\;\wc\to\infty\;}\;\frac{e}{m\wc}E_y=\frac{c\,E_y}{B_0}\;\to\;0 ,
+\]
+y de la misma forma $v_y\to -cE_x/B_0\to0$.
+
+\begin{resultado}[Conclusión física]
+$v_x=v_y=0$ y solo sobrevive $v_z=-\dfrac{ie}{m\omega}E_z$. Los electrones son ``cuentas en un alambre'': solo responden a $E_z$. (Lo que queda, $c\E\times\B_0/B_0^2$, es la deriva $\E\times\B$, que tiende a cero cuando $B_0\to\infty$.)
+\end{resultado}
+
+\subsection{De la velocidad a la corriente y al tensor}
+
+La densidad de corriente de los electrones es $\J_1=-e\,n_0\,\vv_1$. Con el resultado anterior,
+\[
+J_x=0,\qquad J_y=0,\qquad
+J_z=-en_0\left(-\frac{ie}{m\omega}E_z\right)=\frac{i\,n_0e^2}{m\omega}E_z .
+\]
+La ley de Ampère--Maxwell (gaussiana) es $\nabla\times\B_1=\dfrac{4\pi}{c}\J_1+\dfrac{1}{c}\dfrac{\partial\E_1}{\partial t}$. Con \eqref{eq:dt}:
+\[
+\nabla\times\B_1=\frac{4\pi}{c}\J_1-\frac{i\omega}{c}\E_1
+=-\frac{i\omega}{c}\left[\E_1-\frac{4\pi}{i\omega}\J_1\right]
+=-\frac{i\omega}{c}\left[\E_1+\frac{4\pi i}{\omega}\J_1\right],
+\]
+porque $-\frac{1}{i}=i$. Comparando con la forma del libro, $\nabla\times\B_1=-\frac{i\omega}{c}\,\eps\cdot\E_1$ (ec.\ 4.8.2), se identifica $\eps\cdot\E_1=\E_1+\frac{4\pi i}{\omega}\J_1$. Componente por componente:
+\begin{align*}
+(\eps\cdot\E_1)_x&=E_x+0=1\cdot E_x,\\
+(\eps\cdot\E_1)_y&=E_y+0=1\cdot E_y,\\
+(\eps\cdot\E_1)_z&=E_z+\frac{4\pi i}{\omega}\cdot\frac{i n_0e^2}{m\omega}E_z
+=E_z+\frac{4\pi i^2 n_0e^2}{m\omega^2}E_z
+=\left(1-\frac{4\pi n_0 e^2}{m\omega^2}\right)E_z
+=\Kp E_z .
+\end{align*}
+
+\begin{resultado}[Ecuación 4.8.5]
+\[
+\eps=\begin{pmatrix}1&0&0\\0&1&0\\0&0&1-\dfrac{\wp^2}{\omega^2}\end{pmatrix}.
+\]
+Transversalmente el plasma es vacío (1); a lo largo de $\B_0$ es un dieléctrico con constante $1-\wp^2/\omega^2$.
+\end{resultado}
+
+\subsection{¿De dónde sale $\nabla\cdot\eps\cdot\E_1=0$ (ec.\ 4.8.4)?}
+La ley de Gauss es $\nabla\cdot\E_1=4\pi\rho_1$, con $\rho_1=-en_1$. Multiplicando la ecuación de continuidad por $-e$: $\partial_t\rho_1+\nabla\cdot\J_1=0$, es decir $-i\omega\rho_1+\nabla\cdot\J_1=0$, así que $\nabla\cdot\J_1=i\omega\rho_1$. Entonces
+\[
+\nabla\cdot(\eps\cdot\E_1)=\nabla\cdot\E_1+\frac{4\pi i}{\omega}\nabla\cdot\J_1
+=\nabla\cdot\E_1+\frac{4\pi i}{\omega}(i\omega\rho_1)
+=\nabla\cdot\E_1-4\pi\rho_1=0 .
+\]
+Es decir, 4.8.4 es la ley de Gauss con la carga del plasma ``escondida'' dentro de $\eps$. Aquí es donde entra la ecuación de continuidad.
+
+%=====================================================================
+\section{Paso 2: La EDP de onda vectorial (ecs.\ 4.8.6 y 4.8.7)}
+%=====================================================================
+
+\subsection{Rotacional de la ley de Faraday}
+Se parte de
+\[
+\text{(4.8.1)}\quad\nabla\times\E_1=\frac{i\omega}{c}\B_1,
+\qquad
+\text{(4.8.2)}\quad\nabla\times\B_1=-\frac{i\omega}{c}\,\eps\cdot\E_1 .
+\]
+(4.8.1 es Faraday, $\nabla\times\E=-\frac1c\partial_t\B$, con $\partial_t\to-i\omega$.) Se aplica $\nabla\times$ a ambos lados de 4.8.1. Como $\frac{i\omega}{c}$ es constante, sale del rotacional:
+\[
+\nabla\times(\nabla\times\E_1)=\frac{i\omega}{c}\,\nabla\times\B_1 .
+\]
+Se sustituye 4.8.2 en el lado derecho:
+\[
+\nabla\times(\nabla\times\E_1)=\frac{i\omega}{c}\left(-\frac{i\omega}{c}\,\eps\cdot\E_1\right)
+=-\frac{i^2\omega^2}{c^2}\,\eps\cdot\E_1=\frac{\omega^2}{c^2}\,\eps\cdot\E_1 ,
+\]
+usando $i^2=-1$.
+
+\subsection{La identidad $\nabla\times(\nabla\times\mathbf{A})=\nabla(\nabla\cdot\mathbf{A})-\nabla^2\mathbf{A}$}
+Se demuestra en cartesianas para la componente $x$ (las otras son idénticas cambiando letras). Sea $\mathbf{C}=\nabla\times\mathbf{A}$:
+\[
+C_x=\partial_yA_z-\partial_zA_y,\quad C_y=\partial_zA_x-\partial_xA_z,\quad C_z=\partial_xA_y-\partial_yA_x .
+\]
+Entonces
+\begin{align*}
+[\nabla\times\mathbf{C}]_x&=\partial_yC_z-\partial_zC_y
+=\partial_y(\partial_xA_y-\partial_yA_x)-\partial_z(\partial_zA_x-\partial_xA_z)\\
+&=\partial_x\partial_yA_y-\partial_y^2A_x-\partial_z^2A_x+\partial_x\partial_zA_z .
+\end{align*}
+Se suma y se resta $\partial_x^2A_x$:
+\begin{align*}
+[\nabla\times\mathbf{C}]_x
+&=\left(\partial_x^2A_x+\partial_x\partial_yA_y+\partial_x\partial_zA_z\right)-\left(\partial_x^2A_x+\partial_y^2A_x+\partial_z^2A_x\right)\\
+&=\partial_x\left(\partial_xA_x+\partial_yA_y+\partial_zA_z\right)-\nabla^2A_x
+=[\nabla(\nabla\cdot\mathbf{A})]_x-\nabla^2A_x .
+\end{align*}
+(Se usó que las derivadas parciales conmutan: $\partial_y\partial_x=\partial_x\partial_y$.)
+
+Aplicándola a $\E_1$:
+\begin{resultado}[Ecuación 4.8.6]
+\[
+\nabla(\nabla\cdot\E_1)-\nabla^2\E_1=\frac{\omega^2}{c^2}\,\eps\cdot\E_1 .
+\]
+\end{resultado}
+
+\subsection{Componente $z$}
+\begin{ojo}[Detalle importante]
+En coordenadas cilíndricas, $(\nabla^2\E)_r\neq\nabla^2E_r$ porque $\rr$ y $\tth$ cambian de dirección de punto a punto. Pero $\zz$ es un vector \emph{constante}, así que $(\nabla^2\E)_z=\nabla^2E_z$ (laplaciano escalar de la función $E_z$). Por eso se puede trabajar solo con la componente $z$.
+\end{ojo}
+La componente $z$ del lado derecho de 4.8.6 es, por 4.8.5, $\frac{\omega^2}{c^2}\Kp E_z$. Así
+\[
+[\nabla(\nabla\cdot\E_1)]_z-\nabla^2E_z=\frac{\omega^2}{c^2}\Kp E_z .
+\]
+Multiplicando por $-1$ y pasando todo al lado izquierdo:
+\begin{resultado}[Ecuación 4.8.7]
+\[
+\nabla^2E_z+\frac{\omega^2}{c^2}\Kp E_z-[\nabla(\nabla\cdot\E_1)]_z=0 .
+\]
+\end{resultado}
+El último término todavía contiene $E_r$ y $E_\theta$ (dentro de $\nabla\cdot\E_1$). Para cerrar la ecuación solo en $E_z$ se usa 4.8.4.
+
+\subsection{Eliminación de $\nabla\cdot\E_1$ (ecs.\ 4.8.8 y 4.8.9)}
+Por 4.8.5, $\eps\cdot\E_1=\rr E_r+\tth E_\theta+\zz\,\Kp E_z$. Escribiendo $\Kp E_z=E_z-\frac{\wp^2}{\omega^2}E_z$:
+\[
+\eps\cdot\E_1=\underbrace{\left(\rr E_r+\tth E_\theta+\zz E_z\right)}_{\E_1}-\zz\,\frac{\wp^2}{\omega^2}E_z .
+\]
+Tomando divergencia y recordando que la divergencia de $\zz f$ es $\partial f/\partial z$, y que $\wp^2/\omega^2$ es constante (plasma uniforme):
+\[
+0=\nabla\cdot\eps\cdot\E_1=\nabla\cdot\E_1-\frac{\wp^2}{\omega^2}\frac{\partial E_z}{\partial z}
+\quad\Longrightarrow\quad
+\nabla\cdot\E_1=\frac{\wp^2}{\omega^2}\frac{\partial E_z}{\partial z}. \tag{4.8.8}
+\]
+La componente $z$ del gradiente es $\partial/\partial z$, así que
+\[
+[\nabla(\nabla\cdot\E_1)]_z=\frac{\partial}{\partial z}\left(\frac{\wp^2}{\omega^2}\frac{\partial E_z}{\partial z}\right)=\frac{\wp^2}{\omega^2}\frac{\partial^2E_z}{\partial z^2}. \tag{4.8.9}
+\]
+Sustituyendo en 4.8.7 se obtiene una ecuación \emph{cerrada} para $E_z$:
+\begin{equation}
+\nabla^2E_z+\frac{\omega^2}{c^2}\Kp E_z-\frac{\wp^2}{\omega^2}\frac{\partial^2E_z}{\partial z^2}=0 .
+\label{eq:cerrada}
+\end{equation}
+
+%=====================================================================
+\section{Paso 3: Reducción a una EDP bidimensional (ec.\ 4.8.11)}
+%=====================================================================
+
+\subsection{Separar el laplaciano}
+En cilíndricas,
+\[
+\nabla^2=\underbrace{\frac{\partial^2}{\partial r^2}+\frac1r\frac{\partial}{\partial r}+\frac1{r^2}\frac{\partial^2}{\partial\theta^2}}_{\nabla_T^2\ \text{(transversal)}}+\frac{\partial^2}{\partial z^2},
+\]
+(la deducción de $\nabla_T^2$ está en el Apéndice A). Con esto \eqref{eq:cerrada} queda
+\[
+\nabla_T^2E_z+\frac{\partial^2E_z}{\partial z^2}+\frac{\omega^2}{c^2}\Kp E_z-\frac{\wp^2}{\omega^2}\frac{\partial^2E_z}{\partial z^2}=0 .
+\]
+
+\subsection{La onda armónica en $z$ y $t$}
+
+\begin{idea}[Es la misma separación de variables de la cuerda]
+En la cuerda vibrante se propone $u(x,t)=X(x)\,T(t)$: se separa la parte espacial de la temporal. Aquí se hace lo mismo, pero separando \emph{la forma del campo en el corte transversal} $(r,\theta)$ de \emph{cómo cambia a lo largo del tubo} ($z$) y en el tiempo ($t$):
+\[
+E_z(r,\theta,z,t)=\underbrace{\hat E_z(r,\theta)}_{\text{forma en el círculo}}\cdot\underbrace{Z(z)}_{\text{a lo largo del tubo}}\cdot\underbrace{e^{-i\omega t}}_{\text{tiempo}} .
+\]
+Como el tubo es infinito, en $z$ \textbf{no hay condición de frontera}: nada obliga al campo a anularse en algún $z$. Por eso $Z(z)$ solo tiene que oscilar sin crecer, como $\cos(kz)$ o $\sin(kz)$; es la parte de ``onda libre'' del problema (como en la solución de d'Alembert). La frontera está solo en la dirección radial, $r=a$.
+\end{idea}
+
+\begin{idea}[¿Qué es $e^{ikz}$?]
+Por la \textbf{fórmula de Euler}, $e^{ikz}=\cos(kz)+i\sin(kz)$: es un coseno y un seno empaquetados juntos, y al final la parte física es la parte real. El número $k=2\pi/\lambda$ (el \textbf{número de onda}) dice qué tan apretadas están las oscilaciones; $\lambda$ es la longitud de onda. Juntando con el tiempo, $e^{i(kz-\omega t)}$ es una onda que viaja hacia $+z$.
+
+Se usa porque derivarla es trivial: por regla de la cadena,
+\[
+\frac{d}{dz}e^{ikz}=ik\,e^{ikz},\qquad
+\frac{d^2}{dz^2}e^{ikz}=(ik)^2e^{ikz}=-k^2\,e^{ikz}\quad(i^2=-1).
+\]
+\textbf{Derivar dos veces en $z$ equivale a multiplicar por $-k^2$}: la derivada se convierte en un número. Es lo mismo que pasa con el coseno, $\frac{d^2}{dz^2}\cos(kz)=-k^2\cos(kz)$.
+\end{idea}
+
+\noindent\textbf{Cómo se transforma cada término.} Con $E_z=\hat E_z\,e^{i(kz-\omega t)}$:
+\begin{center}
+\renewcommand{\arraystretch}{1.6}
+\begin{tabular}{@{}ll@{}}
+\toprule
+Término original & Se convierte en \\
+\midrule
+$\nabla_T^2E_z$ & $e^{i(kz-\omega t)}\,\nabla_T^2\hat E_z$ \quad (la exponencial no depende de $r,\theta$) \\
+$\dfrac{\partial^2E_z}{\partial z^2}$ & $-k^2\,\hat E_z\,e^{i(kz-\omega t)}$ \quad ($\hat E_z$ no depende de $z$) \\
+$\dfrac{\omega^2}{c^2}\Kp E_z$ & $\dfrac{\omega^2}{c^2}\Kp\hat E_z\,e^{i(kz-\omega t)}$ \\
+$-\dfrac{\wp^2}{\omega^2}\dfrac{\partial^2E_z}{\partial z^2}$ & $+\dfrac{\wp^2}{\omega^2}k^2\,\hat E_z\,e^{i(kz-\omega t)}$ \quad (menos por menos) \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent El detalle de cada derivada, partiendo de la forma propuesta.
+Se supone (ec.\ 4.8.10)
+\[
+E_z(r,\theta,z,t)=\hat E_z(r,\theta)\,e^{i(kz-\omega t)} .
+\]
+Derivando respecto a $z$ (regla de la cadena: la derivada de $e^{ikz}$ es $ik\,e^{ikz}$):
+\[
+\frac{\partial E_z}{\partial z}=ik\,\hat E_z e^{i(kz-\omega t)},\qquad
+\frac{\partial^2E_z}{\partial z^2}=(ik)^2\hat E_z e^{i(kz-\omega t)}=-k^2\,\hat E_z e^{i(kz-\omega t)} .
+\]
+Y respecto a $t$: $\partial_tE_z=-i\omega E_z$, que es justamente la regla \eqref{eq:dt} ya usada en Maxwell. Como $\nabla_T^2$ solo deriva en $r$ y $\theta$, $\nabla_T^2E_z=e^{i(kz-\omega t)}\nabla_T^2\hat E_z$.
+
+Sustituyendo:
+\[
+e^{i(kz-\omega t)}\left[\nabla_T^2\hat E_z-k^2\hat E_z+\frac{\omega^2}{c^2}\Kp\hat E_z+k^2\frac{\wp^2}{\omega^2}\hat E_z\right]=0 .
+\]
+La exponencial nunca es cero, así que se divide entre ella. Se agrupan los dos términos con $k^2$:
+\[
+-k^2+k^2\frac{\wp^2}{\omega^2}=-k^2\Kp .
+\]
+Entonces
+\[
+\nabla_T^2\hat E_z+\frac{\omega^2}{c^2}\Kp\hat E_z-k^2\Kp\hat E_z=0,
+\]
+y sacando el factor común $\Kp$:
+\begin{resultado}[Ecuación 4.8.11]
+\[
+\left[\nabla_T^2+\left(\frac{\omega^2}{c^2}-k^2\right)\Kp\right]\hat E_z=0,
+\qquad\text{o sea}\qquad
+\nabla_T^2\hat E_z+T^2\hat E_z=0,
+\]
+\[
+T^2\equiv\left(\frac{\omega^2}{c^2}-k^2\right)\Kp. \tag{4.8.13}
+\]
+\end{resultado}
+Esta es la \textbf{ecuación de Helmholtz} en el disco $0\le r\le a$: una EDP elíptica en dos variables $(r,\theta)$. El problema 3D dependiente del tiempo se redujo a un problema de valores propios en 2D, y $T^2$ hace el papel del valor propio.
+
+\begin{ojo}[Comparación con la cuerda vibrante]
+\begin{center}
+\renewcommand{\arraystretch}{1.4}
+\begin{tabular}{@{}lll@{}}
+\toprule
+ & Cuerda & Tubo con plasma \\
+\midrule
+Ecuación & $X''+k^2X=0$ & $\nabla_T^2\hat E_z+T^2\hat E_z=0$ \\
+Dominio & intervalo $0<x<L$ & disco $0\le r<a$ \\
+Frontera & $X(0)=X(L)=0$ & $\hat E_z(a,\theta)=0$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+Es la misma estructura, una dimensión más arriba. $T^2$ es solo un número (no depende de $r$ ni de $\theta$): reúne $\omega$, $k$, $c$ y $\wp$.
+\end{ojo}
+
+%=====================================================================
+\section{Paso 4: Separación de variables}
+%=====================================================================
+
+Se escribe la EDP explícitamente:
+\[
+\frac{\partial^2\hat E_z}{\partial r^2}+\frac1r\frac{\partial\hat E_z}{\partial r}+\frac1{r^2}\frac{\partial^2\hat E_z}{\partial\theta^2}+T^2\hat E_z=0 .
+\]
+Se propone $\hat E_z(r,\theta)=R(r)\,\Theta(\theta)$. Las derivadas parciales son
+\[
+\frac{\partial\hat E_z}{\partial r}=R'\Theta,\qquad
+\frac{\partial^2\hat E_z}{\partial r^2}=R''\Theta,\qquad
+\frac{\partial^2\hat E_z}{\partial\theta^2}=R\,\Theta'' .
+\]
+Sustituyendo:
+\[
+R''\Theta+\frac1rR'\Theta+\frac1{r^2}R\Theta''+T^2R\Theta=0 .
+\]
+Se multiplica por $\dfrac{r^2}{R\Theta}$ (en puntos donde $R\Theta\neq0$):
+\[
+\frac{r^2R''}{R}+\frac{rR'}{R}+\frac{\Theta''}{\Theta}+T^2r^2=0
+\quad\Longrightarrow\quad
+\underbrace{\frac{r^2R''+rR'}{R}+T^2r^2}_{\text{solo depende de }r}=\underbrace{-\frac{\Theta''}{\Theta}}_{\text{solo depende de }\theta}.
+\]
+\textbf{Argumento clave:} si se fija $r$ y se varía $\theta$, el lado izquierdo no cambia, así que el derecho tampoco; y viceversa. Una función de $r$ que es igual a una función de $\theta$ para todo $r$ y $\theta$ tiene que ser una constante. Se llama $\lambda$ a esa constante:
+\begin{align}
+\Theta''+\lambda\,\Theta&=0, \label{eq:theta}\\
+r^2R''+rR'+(T^2r^2-\lambda)R&=0. \label{eq:radial}
+\end{align}
+
+\subsection{¿Por qué $\lambda=n^2$ con $n$ entero?}
+El ángulo $\theta$ y $\theta+2\pi$ son el mismo punto físico, así que el campo debe cumplir $\Theta(\theta+2\pi)=\Theta(\theta)$. Se revisan los tres casos de \eqref{eq:theta}:
+\begin{itemize}
+\item $\lambda=-\mu^2<0$: $\Theta=Ae^{\mu\theta}+Be^{-\mu\theta}$, que crece o decrece sin volver a su valor. No es periódica salvo $A=B=0$. \textbf{Se descarta.}
+\item $\lambda=0$: $\Theta''=0\Rightarrow\Theta=A+B\theta$. Periódica solo si $B=0$: queda $\Theta=A$ constante. Es el caso $n=0$ (modos con simetría circular).
+\item $\lambda=n^2>0$: $\Theta=Ae^{in\theta}+Be^{-in\theta}$ (equivalente a $\cos n\theta,\ \sin n\theta$). Periodicidad: $e^{\pm in(\theta+2\pi)}=e^{\pm in\theta}e^{\pm 2\pi i n}$ exige $e^{2\pi in}=1$, es decir $n=1,2,3,\dots$
+\end{itemize}
+Por eso la constante de separación se escribe $\lambda=n^2$ con $n=0,1,2,\dots$ (en la forma $\Theta''/\Theta=-n^2$ de tu propuesta, el signo menos es lo que garantiza soluciones oscilantes). El libro elige la solución $\Theta=e^{-in\theta}$; la otra ($e^{+in\theta}$) es la misma onda girando en sentido contrario y se obtiene cambiando $n\to-n$.
+
+%=====================================================================
+\section{Paso 5: La ecuación de Bessel}
+%=====================================================================
+
+La EDO radial \eqref{eq:radial} con $\lambda=n^2$ es
+\begin{equation}
+r^2\frac{d^2R}{dr^2}+r\frac{dR}{dr}+(T^2r^2-n^2)R=0 .
+\label{eq:besselparam}
+\end{equation}
+\subsection{Cambio de variable $x=Tr$}
+Sea $x=Tr$ (con $T>0$; ver la nota al final de esta sección). Por la regla de la cadena,
+\[
+\frac{dR}{dr}=\frac{dR}{dx}\frac{dx}{dr}=T\frac{dR}{dx},\qquad
+\frac{d^2R}{dr^2}=\frac{d}{dr}\left(T\frac{dR}{dx}\right)=T\frac{d^2R}{dx^2}\frac{dx}{dr}=T^2\frac{d^2R}{dx^2}.
+\]
+Además $r=x/T$, así que $r^2=x^2/T^2$. Sustituyendo en \eqref{eq:besselparam}:
+\[
+\frac{x^2}{T^2}\cdot T^2\frac{d^2R}{dx^2}+\frac{x}{T}\cdot T\frac{dR}{dx}+\left(T^2\frac{x^2}{T^2}-n^2\right)R=0,
+\]
+y cancelando las $T$:
+\begin{resultado}[Ecuación de Bessel de orden $n$]
+\[
+x^2\frac{d^2R}{dx^2}+x\frac{dR}{dx}+(x^2-n^2)R=0 .
+\]
+\end{resultado}
+Es exactamente la forma canónica. Por eso \eqref{eq:besselparam} se llama \emph{ecuación de Bessel paramétrica} (el parámetro es $T$). Su solución general es
+\[
+R(r)=C_1\,J_n(Tr)+C_2\,Y_n(Tr),
+\]
+con $J_n$ la función de Bessel de primera especie y $Y_n$ la de segunda especie. $J_n$ se puede escribir como serie (método de Frobenius):
+\[
+J_n(x)=\sum_{m=0}^{\infty}\frac{(-1)^m}{m!\,(m+n)!}\left(\frac{x}{2}\right)^{2m+n}.
+\]
+
+\subsection{Por qué se descarta $Y_n$}
+El eje del cilindro ($r=0$) está \emph{dentro} del plasma. Cerca de $x=0$:
+\[
+J_n(x)\approx\frac{1}{n!}\left(\frac{x}{2}\right)^n\ \text{(finita)},\qquad
+Y_0(x)\approx\frac{2}{\pi}\ln\frac{x}{2}\to-\infty,
+\]
+\[
+Y_n(x)\approx-\frac{(n-1)!}{\pi}\left(\frac{2}{x}\right)^n\to-\infty\ (n\ge1).
+\]
+Un campo eléctrico infinito en el eje no tiene sentido físico (energía infinita, y no hay ninguna carga puntual ni alambre ahí). Entonces $C_2=0$ y, renombrando $C_1=\hat A$:
+\begin{resultado}[Ecuación 4.8.12]
+\[
+E_z=\hat A\,J_n(Tr)\,e^{i(kz-\omega t-n\theta)} .
+\]
+\end{resultado}
+
+\begin{ojo}[Nota: ¿y si $T^2<0$?]
+Si $T^2=-\kappa^2<0$, la EDO se vuelve $r^2R''+rR'-(\kappa^2r^2+n^2)R=0$ (Bessel \emph{modificada}) y la solución finita es $I_n(\kappa r)$, que crece monótonamente y \textbf{nunca se anula}. Entonces no puede cumplir $E_z(a)=0$. Conclusión: solo hay ondas con $T^2>0$. Esto se usa en la Sección 8.
+\end{ojo}
+
+%=====================================================================
+\section{Paso 6: Frontera y relación de dispersión (4.8.14--4.8.15)}
+%=====================================================================
+
+\subsection{Condición de conductor perfecto}
+Dentro de un conductor perfecto el campo eléctrico es cero, y la componente tangencial de $\E$ es continua al cruzar una superficie. En la pared $r=a$ las direcciones tangentes son $\tth$ y $\zz$, así que $E_z(r=a)=0$ para todo $\theta,z,t$:
+\[
+\hat A\,J_n(Ta)\,e^{i(kz-\omega t-n\theta)}=0 .
+\]
+La exponencial no se anula y $\hat A\neq0$ (si no, no hay onda), por lo tanto
+\[
+J_n(Ta)=0 .
+\]
+Es decir, $Ta$ tiene que ser un cero de $J_n$. Si $p_{n\nu}$ denota el $\nu$-ésimo cero positivo de $J_n$:
+\begin{resultado}[Ecuación 4.8.14]
+\[
+Ta=p_{n\nu}\quad\Longrightarrow\quad T^2=\frac{p_{n\nu}^2}{a^2},\qquad n=0,1,2,\dots,\ \ \nu=1,2,3,\dots
+\]
+\end{resultado}
+Esto es una \textbf{cuantización}: igual que una cuerda de guitarra con extremos fijos solo admite ciertas frecuencias ($\sin(n\pi x/L)$), el cilindro solo admite ciertos valores de $T$. Cada pareja $(n,\nu)$ es un \emph{modo}. Algunos ceros:
+
+\begin{center}
+\begin{tabular}{cccc}
+\toprule
+$\nu$ & $p_{0\nu}$ & $p_{1\nu}$ & $p_{2\nu}$\\
+\midrule
+1 & 2.4048 & 3.8317 & 5.1356\\
+2 & 5.5201 & 7.0156 & 8.4172\\
+3 & 8.6537 & 10.1735 & 11.6198\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Despeje de $k$}
+Se igualan las dos expresiones de $T^2$, (4.8.13) y (4.8.14):
+\[
+\left(\frac{\omega^2}{c^2}-k^2\right)\Kp=\frac{p_{n\nu}^2}{a^2}.
+\]
+Se divide entre $\Kp$ (válido si $\omega\neq\wp$):
+\[
+\frac{\omega^2}{c^2}-k^2=\frac{p_{n\nu}^2}{a^2\left(1-\wp^2/\omega^2\right)}.
+\]
+Se despeja $k^2$:
+\[
+k^2=\frac{\omega^2}{c^2}-\frac{p_{n\nu}^2}{a^2\left(1-\wp^2/\omega^2\right)},
+\]
+y se multiplica por $a^2$ para dejarlo adimensional:
+\begin{resultado}[Ecuación 4.8.15: relación de dispersión]
+\[
+(ka)^2=\frac{\omega^2a^2}{c^2}-\frac{p_{n\nu}^2}{1-\wp^2/\omega^2}.
+\]
+\end{resultado}
+
+%=====================================================================
+\section{Interpretación del resultado (Figura 4.8.3)}
+%=====================================================================
+
+\subsection{$\omega$ como función de $k$}
+Para graficar conviene despejar $\omega$. Multiplicando $\left(\frac{\omega^2}{c^2}-k^2\right)\left(1-\frac{\wp^2}{\omega^2}\right)=\frac{p^2}{a^2}$ por $c^2\omega^2$ y llamando $\omega_0\equiv p_{n\nu}c/a$:
+\[
+(\omega^2-c^2k^2)(\omega^2-\wp^2)=\omega_0^2\,\omega^2 .
+\]
+Desarrollando, con $X=\omega^2$:
+\[
+X^2-X\left(\wp^2+c^2k^2+\omega_0^2\right)+c^2k^2\wp^2=0
+\]
+\[
+\Longrightarrow\quad
+\omega^2=\frac{S\pm\sqrt{S^2-4c^2k^2\wp^2}}{2},\qquad S=\wp^2+\omega_0^2+c^2k^2 .
+\]
+Hay \textbf{dos ramas} para cada modo $(n,\nu)$ (Figura~\ref{fig:disp}, calculada en el notebook):
+
+\begin{figure}[h]
+\centering
+\IfFileExists{figuras/dispersion.png}{\includegraphics[width=0.82\textwidth]{figuras/dispersion.png}}{\fbox{\parbox{0.8\textwidth}{\centering\small Figura: subir \texttt{figuras/dispersion.png} (generada por el notebook)}}}
+\caption{Relación de dispersión 4.8.15 para los modos $(0,1)$ y $(1,1)$ con $\wp a/c=2$. Reproduce la Figura 4.8.3 del libro.}
+\label{fig:disp}
+\end{figure}
+
+\paragraph{Rama superior ($+$): modos de guía de onda.} Es la onda electromagnética de una guía hueca, modificada por el plasma. En $k=0$ el discriminante es $S^2$ y $\omega^2=S=\wp^2+\omega_0^2$:
+\[
+\omega_{\text{corte}}=\sqrt{\omega_0^2+\wp^2}>\omega_0=\frac{p_{n\nu}c}{a}\ \ (\text{corte de la guía vacía}).
+\]
+El plasma \emph{sube} la frecuencia de corte. Para $k\to\infty$, $\omega\approx ck$ (pendiente $c$).
+
+\paragraph{Rama inferior ($-$): ondas de carga espacial.} Existe solo para $0<\omega<\wp$. Son las oscilaciones de plasma que, gracias a las paredes, ahora \emph{se propagan}. Para $k\to0$, usando $\sqrt{S^2-\delta}\approx S-\delta/(2S)$:
+\[
+\omega^2\approx\frac{c^2k^2\wp^2}{\wp^2+\omega_0^2}\quad\Longrightarrow\quad
+\frac{\omega}{k}\approx\frac{\wp c}{\sqrt{\wp^2+\omega_0^2}}\ \xrightarrow{\ \wp\ll\omega_0\ }\ \frac{\wp c}{\omega_0}=\frac{\wp a}{p_{n\nu}},
+\]
+que es la pendiente marcada en la Figura 4.8.3. Para $k\to\infty$, $\omega\to\wp$ (resonancia).
+
+\subsection{¿Por qué no hay ondas entre $\wp$ y $\sqrt{\wp^2+\omega_0^2}$?}
+Por la nota de la Sección 6 se necesita $T^2>0$, es decir $\left(\frac{\omega^2}{c^2}-k^2\right)$ y $\left(1-\frac{\wp^2}{\omega^2}\right)$ con el mismo signo:
+\begin{itemize}
+\item ambos positivos: $\omega>\wp$ y $\omega>ck$ (rama superior, onda ``rápida'');
+\item ambos negativos: $\omega<\wp$ y $\omega<ck$ (rama inferior, onda ``lenta'', velocidad de fase menor que $c$).
+\end{itemize}
+Entre las dos ramas hay una banda prohibida.
+
+\subsection{Comparación con el plasma sin paredes}
+En un plasma infinito y frío las oscilaciones tienen $\omega=\wp$ para cualquier $k$ (Figura 4.8.1): no transportan energía. Con paredes, la rama inferior tiene $\omega$ dependiente de $k$: el sistema se volvió \emph{dispersivo} y las ondas de plasma se propagan. Ese es el mensaje físico central de la sección.
+
+\begin{figure}[h]
+\centering
+\IfFileExists{figuras/modos_seccion.png}{\includegraphics[width=0.85\textwidth]{figuras/modos_seccion.png}}{\fbox{\parbox{0.8\textwidth}{\centering\small Figura: subir \texttt{figuras/modos\_seccion.png} (generada por el notebook)}}}
+\caption{Forma de $E_z$ en la sección transversal para varios modos $(n,\nu)$. Todos se anulan en la pared $r=a$.}
+\end{figure}
+
+\subsection{Conexión con la cuerda vibrante}
+\begin{center}
+\begin{tabular}{lll}
+\toprule
+ & Cuerda (clase) & Cilindro de plasma\\
+\midrule
+EDP & $u_{tt}=v^2u_{xx}$ & $\nabla_T^2\hat E_z+T^2\hat E_z=0$\\
+Dominio & $0\le x\le L$ & disco $0\le r\le a$\\
+Condición de frontera & $u(0)=u(L)=0$ & $E_z(a)=0$ (Dirichlet)\\
+Funciones propias & $\sin(n\pi x/L)$ & $J_n(p_{n\nu}r/a)\,e^{-in\theta}$\\
+Valores propios & $n\pi/L$ & $p_{n\nu}/a$\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+%=====================================================================
+\appendix
+\section{Apéndice A: el laplaciano en coordenadas cilíndricas}
+%=====================================================================
+Con $x=r\cos\theta$, $y=r\sin\theta$ se tiene $r=\sqrt{x^2+y^2}$, $\theta=\arctan(y/x)$, y
+\[
+\frac{\partial r}{\partial x}=\frac{x}{r}=\cos\theta,\quad
+\frac{\partial r}{\partial y}=\sin\theta,\quad
+\frac{\partial \theta}{\partial x}=\frac{-y}{x^2+y^2}=-\frac{\sin\theta}{r},\quad
+\frac{\partial \theta}{\partial y}=\frac{\cos\theta}{r}.
+\]
+Por la regla de la cadena, para una función $f(r,\theta)$:
+\[
+\frac{\partial}{\partial x}=\cos\theta\,\frac{\partial}{\partial r}-\frac{\sin\theta}{r}\frac{\partial}{\partial\theta},\qquad
+\frac{\partial}{\partial y}=\sin\theta\,\frac{\partial}{\partial r}+\frac{\cos\theta}{r}\frac{\partial}{\partial\theta}.
+\]
+Aplicando $\partial_x$ dos veces:
+\begin{align*}
+\frac{\partial^2f}{\partial x^2}
+&=\left(\cos\theta\,\partial_r-\frac{\sin\theta}{r}\partial_\theta\right)\left(\cos\theta\,f_r-\frac{\sin\theta}{r}f_\theta\right)\\
+&=\cos^2\theta\,f_{rr}+\frac{\cos\theta\sin\theta}{r^2}f_\theta-\frac{\cos\theta\sin\theta}{r}f_{r\theta}\\
+&\quad+\frac{\sin^2\theta}{r}f_r-\frac{\sin\theta\cos\theta}{r}f_{r\theta}+\frac{\sin\theta\cos\theta}{r^2}f_\theta+\frac{\sin^2\theta}{r^2}f_{\theta\theta}.
+\end{align*}
+Análogamente
+\begin{align*}
+\frac{\partial^2f}{\partial y^2}
+&=\sin^2\theta\,f_{rr}-\frac{\sin\theta\cos\theta}{r^2}f_\theta+\frac{\sin\theta\cos\theta}{r}f_{r\theta}\\
+&\quad+\frac{\cos^2\theta}{r}f_r+\frac{\cos\theta\sin\theta}{r}f_{r\theta}-\frac{\cos\theta\sin\theta}{r^2}f_\theta+\frac{\cos^2\theta}{r^2}f_{\theta\theta}.
+\end{align*}
+Al sumar, todos los términos con $f_\theta$ y $f_{r\theta}$ se cancelan por pares, y $\sin^2\theta+\cos^2\theta=1$:
+\[
+\nabla_T^2f=\frac{\partial^2f}{\partial x^2}+\frac{\partial^2f}{\partial y^2}=f_{rr}+\frac1rf_r+\frac1{r^2}f_{\theta\theta}
+=\frac1r\frac{\partial}{\partial r}\left(r\frac{\partial f}{\partial r}\right)+\frac1{r^2}\frac{\partial^2 f}{\partial\theta^2}.
+\]
+(La última igualdad: $\frac1r\partial_r(rf_r)=\frac1r(f_r+rf_{rr})=f_{rr}+\frac1rf_r$.) Este cálculo también se verifica con SymPy en el notebook.
+
+\begin{thebibliography}{9}
+\bibitem{krall} N.~A.~Krall y A.~W.~Trivelpiece, \textit{Principles of Plasma Physics}, McGraw-Hill (1973), Sección 4.8.1, pp.~168--171.
+\bibitem{tg} A.~W.~Trivelpiece y R.~W.~Gould, ``Space charge waves in cylindrical plasma columns'', \textit{J.~Appl.~Phys.} \textbf{30}, 1784 (1959).
+\end{thebibliography}
+
+\end{document}
